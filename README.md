@@ -1,6 +1,6 @@
 # AirLens
 
-Desktop dashboard for **Data Visualization using Python**. Five screens: Overview, City explorer, Comparison, Trends, Map.
+College **Data Visualization using Python** project. Five screens: Overview, City explorer, Comparison, Trends, Map. Lamp-black / rust desktop UI — course work, not the internship flagship.
 
 Run **`app.py`**.
 
@@ -27,7 +27,7 @@ If the CSV is missing, a popup warns you and a small demo table is used.
 | City explorer | Latest CSV day, pollutant bars, monthly AQI | **Now** line follows the selected city |
 | Comparison | Top 10 AQI bars, z-scored city × pollutant heatmap | Click a bar to open Map for that city |
 | Trends | Monthly AQI, 3-month average, worst month | **Now** line follows the selected city |
-| Map | Cities on lon/lat. Click: yellow glow + X at the exact point, a card with lon/lat and that city’s CSV AQI | **Now** line follows the selected city |
+| Map | Cities sit on a 2D India outline (lon/lat). Click: yellow glow + X at the exact point, a card with lon/lat and that city’s CSV AQI | **Now** line follows the selected city |
 
 **Refresh live** re-fetches Open-Meteo. No API key. Charts always use the CSV. Live **EAQI** is European AQI, not CPCB.
 
