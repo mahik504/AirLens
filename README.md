@@ -55,3 +55,7 @@ City explorer bars: µg/m³ except CO in the CSV (mg/m³).
 ## Stack
 
 Python, FreeSimpleGUI, Pandas, NumPy, Matplotlib, Seaborn. Live air: Open-Meteo over `urllib` (stdlib).
+
+## License
+
+MIT. See [LICENSE](LICENSE). No live web demo — this is a desktop GUI.
