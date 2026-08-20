@@ -11,6 +11,7 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.patches import Polygon
 import seaborn as sns
 
 try:
@@ -24,6 +25,8 @@ FONT_MONO = "Consolas"
 
 COLOR_BG = "#16110c"
 COLOR_SURFACE = "#241c14"
+COLOR_LAND = "#2c2318"
+COLOR_LAND_EDGE = "#8a684c"
 COLOR_HAIRLINE = "#6a5340"
 COLOR_TEXT = "#f1e4d0"
 COLOR_MUTED = "#b89a7a"
@@ -56,6 +59,7 @@ CITY_COORDS = {
 }
 _LIVE_CACHE = {}
 _LIVE_TTL = 600.0
+_INDIA_RINGS = None
 HEAT_CMAP = LinearSegmentedColormap.from_list(
     "airlens_heat", ["#3a2a18", "#c4922a", "#c45c26", "#5c1410"]
 )
@@ -540,6 +544,26 @@ def plot_trends(df, city, canvas):
     return fig
 
 
+def india_rings():
+    global _INDIA_RINGS
+    if _INDIA_RINGS is not None:
+        return _INDIA_RINGS
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "india_outline.json")
+    rings = []
+    try:
+        with open(path, encoding="utf-8") as fh:
+            payload = json.load(fh)
+        src = payload.get("rings") if isinstance(payload, dict) else payload
+        for ring in src or []:
+            pts = [(float(p[0]), float(p[1])) for p in ring if len(p) >= 2]
+            if len(pts) >= 3:
+                rings.append(pts)
+    except (OSError, ValueError, TypeError, KeyError):
+        rings = []
+    _INDIA_RINGS = rings
+    return _INDIA_RINGS
+
+
 def nearest_city(lon, lat, max_deg=3.0):
     best = None
     best_d = 1e9
@@ -556,6 +580,18 @@ def nearest_city(lon, lat, max_deg=3.0):
 def plot_map(df, canvas, selected=None, click_pt=None):
     fig, ax = new_figure(canvas, 1)
     style_axes(fig, ax)
+    ax.set_facecolor(COLOR_BG)
+    for ring in india_rings():
+        ax.add_patch(Polygon(
+            ring,
+            closed=True,
+            facecolor=COLOR_LAND,
+            edgecolor=COLOR_LAND_EDGE,
+            linewidth=1.15,
+            joinstyle="round",
+            zorder=0,
+        ))
+    ax.set_axisbelow(False)
     avgs = df.groupby("City")["AQI"].mean() if not df.empty else pd.Series(dtype=float)
     xs, ys, colors, names = [], [], [], []
     for city, (lat, lon) in CITY_COORDS.items():

@@ -66,7 +66,7 @@ Left: top 10 cities by average AQI (worst at the top). Colour follows the CPCB b
 Monthly average AQI, a 3-month rolling average, and the worst month marked. The large number is that worst-month average.
 
 **Map**  
-Cities plotted by longitude/latitude, coloured by mean CSV AQI. Click anywhere on the chart: a yellow glow + X marks the exact click (lon/lat), a card shows that point and the nearest city’s mean AQI / latest day, and a bright ring sits on that city. Clicks far from every city still keep the mark and coordinates. Clicking a bar on Comparison jumps here for that city.
+A 2D India outline sits under the city dots (local `data/india_outline.json`, matplotlib Polygon, no GIS libraries); cities are lon/lat points coloured by mean CSV AQI, a click drops a yellow glow + X plus a lon/lat card for the nearest city, far clicks keep the mark, and a Comparison bar still jumps here.
 
 ## 6. AQI categories used on the historical charts
 
@@ -93,7 +93,9 @@ AirLens/
   requirements.txt
   README.md
   REPORT.md
+  AirLens.pptx
   data/city_day.csv
+  data/india_outline.json
 ```
 
 ## 9. Honest limits
