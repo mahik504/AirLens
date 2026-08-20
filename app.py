@@ -64,7 +64,11 @@ HEAT_CMAP = LinearSegmentedColormap.from_list(
     "airlens_heat", ["#3a2a18", "#c4922a", "#c45c26", "#5c1410"]
 )
 
-plt.rcParams["font.family"] = [FONT_DISPLAY, FONT_UI]
+plt.rcParams["font.family"] = [FONT_MONO, FONT_DISPLAY, FONT_UI]
+plt.rcParams["axes.titlesize"] = 10
+plt.rcParams["axes.labelsize"] = 9
+plt.rcParams["xtick.labelsize"] = 8
+plt.rcParams["ytick.labelsize"] = 8
 sns.set_theme(style="ticks")
 
 sg.LOOK_AND_FEEL_TABLE["AirLensDesk"] = {
@@ -144,15 +148,15 @@ def fetch_live_air(city, force=False):
 
 def format_live_line(city, live):
     if not live:
-        return f"Now · {city} · Open-Meteo unreachable"
+        return f"[NOW]  {city}  ·  Open-Meteo unreachable"
     eaqi = live.get("european_aqi")
     pm25 = live.get("PM2.5")
     when = live.get("time") or ""
     eaqi_txt = "—" if eaqi is None else str(int(eaqi))
     pm_txt = "—" if pm25 is None else f"{float(pm25):.0f}"
     clock = when.replace("T", " ") if when else ""
-    extra = f" · {clock}" if clock else ""
-    return f"Now · {city} · EAQI {eaqi_txt} · PM2.5 {pm_txt} µg/m³{extra}"
+    extra = f"  ·  {clock}" if clock else ""
+    return f"[NOW]  {city}  ·  EAQI {eaqi_txt}  ·  PM2.5 {pm_txt} µg/m³{extra}"
 
 
 def generate_fallback_data():
@@ -279,14 +283,16 @@ def new_figure(canvas, ncols=1):
 def style_axes(fig, ax):
     fig.patch.set_facecolor(COLOR_BG)
     ax.set_facecolor(COLOR_SURFACE)
-    ax.tick_params(colors=COLOR_MUTED, labelsize=9)
-    ax.xaxis.label.set_color(COLOR_TEXT)
-    ax.yaxis.label.set_color(COLOR_TEXT)
+    ax.tick_params(colors=COLOR_MUTED, labelsize=8, length=3, width=0.6)
+    ax.xaxis.label.set_color(COLOR_MUTED)
+    ax.yaxis.label.set_color(COLOR_MUTED)
     ax.title.set_color(COLOR_MUTED)
+    ax.title.set_fontfamily(FONT_MONO)
+    ax.title.set_fontsize(10)
     for spine in ax.spines.values():
         spine.set_color(COLOR_HAIRLINE)
-        spine.set_linewidth(0.8)
-    ax.grid(True, linestyle="-", alpha=0.18, color=COLOR_HAIRLINE)
+        spine.set_linewidth(0.55)
+    ax.grid(True, linestyle="-", alpha=0.22, color=COLOR_HAIRLINE, linewidth=0.5)
 
 
 def style_legend(leg):
@@ -688,11 +694,11 @@ def nav_button(label, key, active=False):
     return sg.Button(
         label,
         key=key,
-        size=(20, 2),
+        size=(22, 1),
         button_color=colors,
-        font=(FONT_UI, 13),
+        font=(FONT_MONO, 11),
         border_width=0,
-        pad=((12, 12), (5, 5))
+        pad=((10, 10), (3, 3))
     )
 
 
@@ -702,7 +708,7 @@ def main():
         sg.popup(
             "data/city_day.csv was missing or could not be read.\nShowing demo data so the dashboard still runs.",
             title="AirLens",
-            font=(FONT_UI, 10)
+            font=(FONT_MONO, 10)
         )
 
     cities = sorted(df["City"].dropna().unique().tolist())
@@ -726,37 +732,37 @@ def main():
     aqi_display = f"{overall_avg_aqi:.0f}" if float(overall_avg_aqi).is_integer() else str(overall_avg_aqi)
 
     sidebar_col = [
-        [sg.Text("AirLens", font=(FONT_DISPLAY, 26), text_color=COLOR_TEXT, background_color=COLOR_BG, pad=((14, 14), (22, 4)))],
-        [sg.Text("India air quality", font=(FONT_UI, 11), text_color=COLOR_MUTED, background_color=COLOR_BG, pad=((14, 14), (0, 20)))],
-        [nav_button("  01    Overview", "-NAV-OVERVIEW-", active=True)],
-        [nav_button("  02    City explorer", "-NAV-EXPLORER-")],
-        [nav_button("  03    Comparison", "-NAV-COMPARE-")],
-        [nav_button("  04    Trends", "-NAV-TRENDS-")],
-        [nav_button("  05    Map", "-NAV-MAP-")],
+        [sg.Text("AIRLENS", font=(FONT_MONO, 22), text_color=COLOR_TEXT, background_color=COLOR_BG, pad=((14, 14), (18, 2)))],
+        [sg.Text("[ INDIA  AQI ]", font=(FONT_MONO, 9), text_color=COLOR_ACCENT, background_color=COLOR_BG, pad=((14, 14), (0, 16)))],
+        [nav_button("[01]  Overview", "-NAV-OVERVIEW-", active=True)],
+        [nav_button("[02]  City explorer", "-NAV-EXPLORER-")],
+        [nav_button("[03]  Comparison", "-NAV-COMPARE-")],
+        [nav_button("[04]  Trends", "-NAV-TRENDS-")],
+        [nav_button("[05]  Map", "-NAV-MAP-")],
         [sg.VPush(background_color=COLOR_BG)],
-        [sg.Text(stamp, font=(FONT_DISPLAY, 14), text_color=stamp_color, background_color=COLOR_BG, pad=((14, 14), (0, 2)))],
-        [sg.Text(f"{total_records:,} rows", font=(FONT_MONO, 10), text_color=COLOR_MUTED, background_color=COLOR_BG, pad=((14, 14), (0, 8)))],
-        [sg.Text("Now · checking Open-Meteo…", font=(FONT_UI, 9), text_color=COLOR_MUTED, background_color=COLOR_BG, key="-NOW-LINE-", pad=((14, 14), (0, 8)))],
-        [sg.Button("Refresh live", key="-LIVE-REFRESH-", size=(16, 1), button_color=(COLOR_TEXT, COLOR_SURFACE), font=(FONT_UI, 10), border_width=0, pad=((14, 14), (0, 18)))],
+        [sg.Text(f"[{stamp}]", font=(FONT_MONO, 12), text_color=stamp_color, background_color=COLOR_BG, pad=((14, 14), (0, 2)))],
+        [sg.Text(f"{total_records:,} rows", font=(FONT_MONO, 9), text_color=COLOR_MUTED, background_color=COLOR_BG, pad=((14, 14), (0, 8)))],
+        [sg.Text("[NOW]  checking Open-Meteo…", font=(FONT_MONO, 8), text_color=COLOR_MUTED, background_color=COLOR_BG, key="-NOW-LINE-", pad=((14, 14), (0, 8)))],
+        [sg.Button("Refresh live", key="-LIVE-REFRESH-", size=(18, 1), button_color=(COLOR_TEXT, COLOR_SURFACE), font=(FONT_MONO, 9), border_width=0, pad=((14, 14), (0, 16)))],
     ]
 
     hero_col = [
-        [sg.Text("Average AQI", font=(FONT_UI, 9), text_color=COLOR_MUTED, background_color=COLOR_BG)],
+        [sg.Text("AVERAGE AQI", font=(FONT_MONO, 8), text_color=COLOR_MUTED, background_color=COLOR_BG)],
         [sg.Text(aqi_display, font=(FONT_DISPLAY, 64), text_color=bucket_color, background_color=COLOR_BG)],
-        [sg.Text(overall_bucket, font=(FONT_DISPLAY, 16), text_color=bucket_color, background_color=COLOR_BG, pad=((0, 0), (4, 10)))],
+        [sg.Text(overall_bucket, font=(FONT_MONO, 14), text_color=bucket_color, background_color=COLOR_BG, pad=((0, 0), (4, 10)))],
         [sg.Text(
             f"{total_cities} cities    ·    {total_records:,} days    ·    through {latest_date}",
-            font=(FONT_UI, 9), text_color=COLOR_MUTED, background_color=COLOR_BG
+            font=(FONT_MONO, 8), text_color=COLOR_MUTED, background_color=COLOR_BG
         )],
     ]
 
     pair_col = [
-        [sg.Text("Most polluted", font=(FONT_UI, 9), text_color=COLOR_MUTED, background_color=COLOR_BG)],
+        [sg.Text("MOST POLLUTED", font=(FONT_MONO, 8), text_color=COLOR_MUTED, background_color=COLOR_BG)],
         [sg.Text(most_polluted, font=(FONT_DISPLAY, 18), text_color=COLOR_TEXT, background_color=COLOR_BG)],
-        [sg.Text(str(most_polluted_val), font=(FONT_MONO, 14), text_color=AQI_COLORS["Very Poor"], background_color=COLOR_BG, pad=((0, 0), (0, 18)))],
-        [sg.Text("Cleanest", font=(FONT_UI, 9), text_color=COLOR_MUTED, background_color=COLOR_BG)],
+        [sg.Text(str(most_polluted_val), font=(FONT_MONO, 13), text_color=AQI_COLORS["Very Poor"], background_color=COLOR_BG, pad=((0, 0), (0, 18)))],
+        [sg.Text("CLEANEST", font=(FONT_MONO, 8), text_color=COLOR_MUTED, background_color=COLOR_BG)],
         [sg.Text(cleanest, font=(FONT_DISPLAY, 18), text_color=COLOR_TEXT, background_color=COLOR_BG)],
-        [sg.Text(str(cleanest_val), font=(FONT_MONO, 14), text_color=AQI_COLORS["Good"], background_color=COLOR_BG)],
+        [sg.Text(str(cleanest_val), font=(FONT_MONO, 13), text_color=AQI_COLORS["Good"], background_color=COLOR_BG)],
     ]
 
     kpi_frame = [[
@@ -767,10 +773,10 @@ def main():
 
     city_controls = [
         [
-            sg.Text("City", font=(FONT_UI, 9), text_color=COLOR_MUTED, key="-CITY-LBL-", visible=False, background_color=COLOR_BG),
+            sg.Text("CITY", font=(FONT_MONO, 8), text_color=COLOR_MUTED, key="-CITY-LBL-", visible=False, background_color=COLOR_BG),
             sg.Combo(
                 cities, default_value=default_city, key="-CITY-COMBO-", enable_events=True,
-                font=(FONT_UI, 10), size=(18, 1), readonly=True, visible=False,
+                font=(FONT_MONO, 10), size=(18, 1), readonly=True, visible=False,
                 background_color=COLOR_SURFACE, text_color=COLOR_TEXT, button_arrow_color=COLOR_ACCENT
             ),
         ],
@@ -780,23 +786,23 @@ def main():
             sg.Text("", font=(FONT_DISPLAY, 48), key="-CITY-HERO-AQI-", visible=False, text_color=COLOR_TEXT, background_color=COLOR_BG),
             sg.Text("", font=(FONT_DISPLAY, 14), key="-CITY-HERO-BUCKET-", visible=False, text_color=COLOR_MUTED, background_color=COLOR_BG, pad=((12, 0), (18, 0))),
         ],
-        [sg.Text("", font=(FONT_UI, 9), key="-CITY-STATS-", visible=False, text_color=COLOR_MUTED, background_color=COLOR_BG)],
+        [sg.Text("", font=(FONT_MONO, 8), key="-CITY-STATS-", visible=False, text_color=COLOR_MUTED, background_color=COLOR_BG)],
     ]
 
     main_col = [
         [
-            sg.Text("Overview", font=(FONT_DISPLAY, 16), key="-HEADER-TITLE-", text_color=COLOR_MUTED, background_color=COLOR_BG),
+            sg.Text("[01]  Overview", font=(FONT_MONO, 13), key="-HEADER-TITLE-", text_color=COLOR_MUTED, background_color=COLOR_BG),
             sg.Push(),
-            sg.Text(latest_date, font=(FONT_MONO, 9), text_color=COLOR_MUTED, background_color=COLOR_BG)
+            sg.Text(latest_date, font=(FONT_MONO, 9), text_color=COLOR_HAIRLINE, background_color=COLOR_BG)
         ],
-        [sg.HSeparator(color=COLOR_HAIRLINE, pad=((0, 0), (6, 14)))],
+        [sg.HSeparator(color=COLOR_HAIRLINE, pad=((0, 0), (4, 10)))],
         [sg.Column(kpi_frame, key="-KPI-ROW-", background_color=COLOR_BG, pad=(0, 0), expand_x=True)],
         [sg.Column(city_controls, key="-CITY-ROW-", background_color=COLOR_BG, pad=((0, 0), (0, 8)), expand_x=True)],
         [sg.Canvas(key="-CANVAS-", background_color=COLOR_BG, expand_x=True, expand_y=True)]
     ]
 
     layout = [[
-        sg.Column(sidebar_col, background_color=COLOR_BG, size=(268, None), expand_y=True, pad=((0, 20), (0, 0))),
+        sg.Column(sidebar_col, background_color=COLOR_BG, size=(268, None), expand_y=True, pad=((0, 16), (0, 0))),
         sg.Column(main_col, background_color=COLOR_BG, expand_x=True, expand_y=True, pad=(0, 0)),
     ]]
 
@@ -805,7 +811,7 @@ def main():
         layout,
         finalize=True,
         resizable=True,
-        margins=(20, 18),
+        margins=(16, 12),
         background_color=COLOR_BG
     )
 
@@ -961,15 +967,15 @@ def main():
             continue
 
         if event == "-NAV-OVERVIEW-":
-            show_screen("overview", "Overview", False)
+            show_screen("overview", "[01]  Overview", False)
         elif event == "-NAV-EXPLORER-":
-            show_screen("explorer", "City explorer", True)
+            show_screen("explorer", "[02]  City explorer", True)
         elif event == "-NAV-COMPARE-":
-            show_screen("compare", "Comparison", False)
+            show_screen("compare", "[03]  Comparison", False)
         elif event == "-NAV-TRENDS-":
-            show_screen("trends", "Trends", True)
+            show_screen("trends", "[04]  Trends", True)
         elif event == "-NAV-MAP-":
-            show_screen("map", "Map", True)
+            show_screen("map", "[05]  Map", True)
         elif event == "-CITY-COMBO-":
             city = selected_city()
             if current_screen == "explorer":
@@ -981,7 +987,7 @@ def main():
             elif current_screen == "map":
                 map_click[0] = None
                 map_click[1] = None
-                window["-HEADER-TITLE-"].update("Map")
+                window["-HEADER-TITLE-"].update("[05]  Map")
                 refresh_explorer_chrome(city)
                 redraw()
             refresh_live_line()
@@ -994,9 +1000,9 @@ def main():
                 if city:
                     window["-CITY-COMBO-"].update(city)
                     refresh_explorer_chrome(city)
-                    window["-HEADER-TITLE-"].update(f"Map · {city} · {x:.2f}°E, {y:.2f}°N")
+                    window["-HEADER-TITLE-"].update(f"[05]  Map  ·  {city}  ·  {x:.2f}°E, {y:.2f}°N")
                 else:
-                    window["-HEADER-TITLE-"].update(f"Map · {x:.2f}°E, {y:.2f}°N")
+                    window["-HEADER-TITLE-"].update(f"[05]  Map  ·  {x:.2f}°E, {y:.2f}°N")
                 redraw()
                 refresh_live_line()
             elif current_screen == "compare" and current_fig_agg is not None:
@@ -1008,7 +1014,7 @@ def main():
                         window["-CITY-COMBO-"].update(city)
                         map_click[0] = CITY_COORDS[city][1] if city in CITY_COORDS else None
                         map_click[1] = CITY_COORDS[city][0] if city in CITY_COORDS else None
-                        show_screen("map", f"Map · {city}", True)
+                        show_screen("map", f"[05]  Map  ·  {city}", True)
         elif event == "-LIVE-REFRESH-":
             refresh_live_line(force=True)
 
